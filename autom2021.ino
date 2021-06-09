@@ -11,14 +11,17 @@
  #define DHTTYPE DHT11
  
  DHT dht(DHTPIN, DHTTYPE);
+
  unsigned long previousMillis = 0;//definicion de variable para contador de tiempo
+ unsigned long previousMillis2 = 0;//definicion de variable para contador de tiempo
+ unsigned long interval = 30000;
 
  const char* ssid = "tunobredered";  
  const char* password = "tuclavewifi"; 
  WiFiClient client;  
  
- unsigned long myChannelNumber = "numerodecanal";  
- const char * myWriteAPIKey = "WriteAPIKey";  
+ unsigned long myChannelNumber = 123456;  //ChannelNumber
+ const char * myWriteAPIKey = "fjqwe83flsd3412";  //WriteAPIKey
  uint8_t temperature, humidity;  //variables para dht
  
  //declaracion de pines
@@ -157,9 +160,23 @@ void loop()
       Serial.print("Humidity Value is :");  
       Serial.print(humidity);  
       Serial.println("%");  
-      ThingSpeak.writeField(myChannelNumber, 1, temperature, myWriteAPIKey);  
+      ThingSpeak.writeField(myChannelNumber, 1, temperature, myWriteAPIKey);
+      delay(15000);  
       ThingSpeak.writeField(myChannelNumber, 2, humidity, myWriteAPIKey);  
    }
-
+  
+  unsigned long currentMillis2 = millis();
+  // if WiFi is down, try reconnecting every CHECK_WIFI_TIME seconds
+  if ((WiFi.status() != WL_CONNECTED) && (currentMillis2 - previousMillis >=interval)) {
+    Serial.print(millis());
+    Serial.println("Reconnecting to WiFi...");
+    WiFi.disconnect();
+    WiFi.begin(ssid, password);
+    Serial.println(WiFi.localIP());
+    //Alternatively, you can restart your board
+    //ESP.restart();
+    Serial.println(WiFi.RSSI());
+    previousMillis2 = currentMillis2;
+  }
    
 }
