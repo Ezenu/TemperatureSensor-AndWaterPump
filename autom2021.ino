@@ -10,7 +10,6 @@
  #define DHTPIN D4  //definicion del pin usado para el sensor en este caso el d
  #define DHTTYPE DHT11
  
- 
  DHT dht(DHTPIN, DHTTYPE);
  unsigned long previousMillis = 0;//definicion de variable para contador de tiempo
 
@@ -69,11 +68,13 @@ void setup()
     Serial.println("");  
     Serial.println("WiFi connected");  
     // Print the IP address  
-    Serial.println(WiFi.localIP());  
-
+    Serial.println(WiFi.localIP());
+    
     Serial.println("Ready");
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
+    WiFi.setAutoReconnect(true);
+    WiFi.persistent(true);
     ThingSpeak.begin(client);  
     
 
@@ -111,16 +112,18 @@ void loop()
    
 //Encendido de bomba si falta agua en el tanque y si la cisterna tiene agua
   if (estadotanque  && !estadocisterna)
-    { 
+    {
+    delay(500);  
     Serial.println("bomba en funcionamiento");
-    delay(50);
+    delay(500);
     pinMode(LED_BUILTIN, HIGH);
     delay(500);
     digitalWrite(Bomba,LOW);
     delay(50);
     estadobomba=1;
-   
+    delay(500);   
     }
+  
  //apagar bomba si se vacio la cisterna o si se lleno el tanque 
    else if (estadocisterna  || !estadotanque )
   {
@@ -131,9 +134,7 @@ void loop()
    digitalWrite(Bomba,HIGH);
    delay(50);
    estadobomba=0;
-   
-   
-   delay(100);
+   delay(300);
   }
   //si la bomba esta en funcionamento envia la informacion a thingspeak para controlar su uso y horarios
   if (estadobomba)
@@ -141,7 +142,7 @@ void loop()
     ThingSpeak.writeField(myChannelNumber, 3, estadobomba, myWriteAPIKey);
   }
   
-  delay(100);
+  delay(1000);
 
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= 240000)//Cada 4min envia los valores leidos por el dth a thingspeak
